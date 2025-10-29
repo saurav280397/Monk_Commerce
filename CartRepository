@@ -1,0 +1,8 @@
+package com.monkcommerce.couponapi.repository;
+
+import com.monkcommerce.couponapi.model.Coupon;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+// Provides basic CRUD operations
+public interface CouponRepository extends JpaRepository<Coupon, String> {
+}
