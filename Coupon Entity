@@ -1,0 +1,25 @@
+package com.monkcommerce.couponapi.model;
+
+import jakarta.persistence.*;
+import lombok.Data;
+import java.time.LocalDate;
+
+@Entity
+@Data // Lombok for getters, setters, toString
+public class Coupon {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID) // Using UUID for IDs
+    private String id;
+    
+    // Required fields
+    private String type; // cart-wise, product-wise, bxgy
+    private LocalDate expirationDate; // Bonus requirement
+    
+    // Stores discount details and conditions as a JSON string or large text
+    // This supports easy addition of new coupon types without schema changes.
+    @Lob 
+    private String details; 
+
+    // Additional condition fields can be added here if needed
+}
