@@ -1,0 +1,20 @@
+package com.monkcommerce.couponapi.service.discount;
+
+import com.monkcommerce.couponapi.model.Coupon;
+import com.monkcommerce.couponapi.dto.Cart;
+import com.monkcommerce.couponapi.dto.ApplicabilityResult;
+
+public interface DiscountStrategy {
+    
+    String getType(); // e.g., "cart-wise"
+
+    /**
+     * Checks if the coupon is applicable to the cart and calculates the discount amount.
+     */
+    ApplicabilityResult checkApplicability(Coupon coupon, Cart cart);
+
+    /**
+     * Applies the discount and returns the updated cart with item-level discounts.
+     */
+    Cart applyDiscount(Coupon coupon, Cart cart);
+}
