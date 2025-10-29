@@ -1,0 +1,59 @@
+package com.monkcommerce.couponapi.service.discount;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.monkcommerce.couponapi.model.Coupon;
+import com.monkcommerce.couponapi.dto.Cart;
+import com.monkcommerce.couponapi.dto.ApplicabilityResult;
+import org.springframework.stereotype.Component;
+
+@Component
+public class CartWiseDiscountStrategy implements DiscountStrategy {
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @Override
+    public String getType() {
+        return "cart-wise";
+    }
+
+    @Override
+    public ApplicabilityResult checkApplicability(Coupon coupon, Cart cart) {
+        try {
+            JsonNode details = objectMapper.readTree(coupon.getDetails());
+            double threshold = details.get("threshold").asDouble();
+            double discountRate = details.get("discount").asDouble();
+
+            double cartTotal = cart.getItems().stream()
+                    .mapToDouble(item -> item.getPrice() * item.getQuantity())
+                    .sum();
+            
+            // Condition: Cart total must exceed the threshold [cite: 24]
+            if (cartTotal > threshold) {
+                double discountAmount = Math.round(cartTotal * (discountRate / 100.0));
+                return new ApplicabilityResult(true, discountAmount);
+            }
+        } catch (Exception e) {
+            // Handle parsing errors
+        }
+        return new ApplicabilityResult(false, 0.0);
+    }
+
+    @Override
+    public Cart applyDiscount(Coupon coupon, Cart cart) {
+        // Implementation similar to checkApplicability, then update cart fields
+        ApplicabilityResult result = checkApplicability(coupon, cart);
+        
+        if (result.isApplicable()) {
+            double finalPrice = cart.getTotalPrice() - result.discount();
+            
+            // Create and return an updated Cart DTO
+            Cart updatedCart = new Cart(cart.getItems());
+            updatedCart.setTotalDiscount(result.discount());
+            updatedCart.setFinalPrice(finalPrice);
+            return updatedCart;
+        }
+        throw new RuntimeException("Cart-wise coupon conditions not met."); // Basic error handling [cite: 41]
+    }
+}
+// Note: ProductWiseDiscountStrategy and BxGyDiscountStrategy would be implemented similarly.
