@@ -1,0 +1,55 @@
+package com.monkcommerce.couponapi.controller;
+
+import com.monkcommerce.couponapi.model.Coupon;
+import com.monkcommerce.couponapi.service.CouponService;
+import com.monkcommerce.couponapi.dto.Cart;
+import com.monkcommerce.couponapi.dto.ApplicableCouponDTO;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/coupons")
+public class CouponController {
+
+    private final CouponService couponService;
+
+    public CouponController(CouponService couponService) {
+        this.couponService = couponService;
+    }
+
+    // POST/coupons: Create a new coupon [cite: 28]
+    @PostMapping
+    public ResponseEntity<Coupon> createCoupon(@RequestBody Coupon coupon) {
+        return new ResponseEntity<>(couponService.createCoupon(coupon), HttpStatus.CREATED);
+    }
+
+    // GET /coupons: Retrieve all coupons [cite: 29]
+    @GetMapping
+    public List<Coupon> getAllCoupons() {
+        return couponService.findAll();
+    }
+    
+    // GET /coupons/{id}: Retrieve a specific coupon by its ID [cite: 30]
+    @GetMapping("/{id}")
+    public Coupon getCouponById(@PathVariable String id) {
+        return couponService.findById(id);
+    }
+
+    // --- Application Endpoints ---
+
+    // POST /applicable-coupons: Fetch all applicable coupons [cite: 32]
+    @PostMapping("/applicable-coupons")
+    public List<ApplicableCouponDTO> getApplicableCoupons(@RequestBody Cart cart) {
+        return couponService.fetchApplicableCoupons(cart);
+    }
+
+    // POST /apply-coupon/{id}: Apply a specific coupon [cite: 33]
+    @PostMapping("/apply-coupon/{id}")
+    public ResponseEntity<?> applyCouponToCart(@PathVariable String id, @RequestBody Cart cart) {
+        Cart updatedCart = couponService.applyCouponToCart(id, cart);
+        return ResponseEntity.ok(Map.of("updated_cart", updatedCart));
+    }
+}
